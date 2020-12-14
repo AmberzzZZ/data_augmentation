@@ -172,8 +172,8 @@ if __name__ == '__main__':
     for i in range(10):
         # img2, boxes2, _ = random_expand(img, boxes, labels)
         # img2, boxes2, _ = random_crop(img, boxes, labels)
-        img2, boxes2, _ = random_flip(img, boxes, labels)
-        # img2, boxes2, _ = random_rotate(img, boxes, labels)
+        # img2, boxes2, _ = random_flip(img, boxes, labels)
+        img2, boxes2, _ = random_rotate(img, boxes, labels)
         h, w, c = img2.shape
         for i in range(boxes2.shape[0]):
             bbox = boxes2[i]
@@ -182,3 +182,4 @@ if __name__ == '__main__':
 
         cv2.imshow("tmp2", img2)
         cv2.waitKey(0)
+        cv2.imwrite("random_rotate.png", img2)
