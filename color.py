@@ -5,8 +5,9 @@ import random
 
 # [0,255] img
 
-def random_noise(img, bright_vari=32):
+def random_noise(img):
     img = img.copy()
+    bright_vari=32
     bright_add = np.random.uniform(-bright_vari, bright_vari, img.shape)
     img = img + bright_add
     img[img>255] = 255
@@ -14,8 +15,9 @@ def random_noise(img, bright_vari=32):
     return np.uint8(img)
 
 
-def random_brightness(img, bright_vari=50):
+def random_brightness(img):
     img = img.copy()
+    bright_vari=50
     bright_vari = random.uniform(-bright_vari, bright_vari)
     img = img + bright_vari
     img[img>255] = 255
@@ -25,7 +27,7 @@ def random_brightness(img, bright_vari=50):
 
 def random_contrast(img):
     img = img.copy()
-    contrast_vari = random.uniform(0.5, 0.6)
+    contrast_vari = random.uniform(0.5, 1.5)
     img = img * contrast_vari
     img[img>255] = 255
     img[img<0] = 0
@@ -56,7 +58,7 @@ def random_lightingnoise(img):
     return img
 
 
-def random_gamma(img, gamma=0.4):
+def random_gamma(img):
     img = img.copy()
     gamma = random.choice([0.4, 0.5, 0.8, 1.0, 1.2, 1.5])
     inv_gamma = 1.0 / gamma

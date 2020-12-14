@@ -118,7 +118,7 @@ def random_rotate(img, boxes, labels):
 
 def rotate_img(angle, img, points=[], interpolation=cv2.INTER_LINEAR):
     h, w, c = img.shape
-    rotataMat = cv2.getRotationMatrix2D((w/2, h/2), math.degrees(angle), 1)
+    rotataMat = cv2.getRotationMatrix2D((w/2-0.5, h/2-0.5), math.degrees(angle), 1)
     new_h = int(w*math.fabs(math.sin(angle)) + h*math.fabs(math.cos(angle)))
     new_w = int(h*math.fabs(math.sin(angle)) + w*math.fabs(math.cos(angle)))
     rotataMat[0, 2] += (new_w - w) / 2
@@ -170,10 +170,10 @@ if __name__ == '__main__':
     labels = np.array(labels)
 
     for i in range(10):
-        # img2, boxes2, _ = random_expand(img, boxes, labels)
+        img2, boxes2, _ = random_expand(img, boxes, labels)
         # img2, boxes2, _ = random_crop(img, boxes, labels)
         # img2, boxes2, _ = random_flip(img, boxes, labels)
-        img2, boxes2, _ = random_rotate(img, boxes, labels)
+        # img2, boxes2, _ = random_rotate(img, boxes, labels)
         h, w, c = img2.shape
         for i in range(boxes2.shape[0]):
             bbox = boxes2[i]
@@ -182,4 +182,4 @@ if __name__ == '__main__':
 
         cv2.imshow("tmp2", img2)
         cv2.waitKey(0)
-        cv2.imwrite("random_rotate.png", img2)
+        # cv2.imwrite("random_rotate.png", img2)
