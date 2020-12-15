@@ -82,6 +82,7 @@ def merge_boxes(boxes_lst, labels_lst, cutx, cuty, canvas_h, canvas_w):
         canvas_boxes.append(boxes)
         canvas_labels.append(labels_lst[i])
     boxes_lst = np.concatenate(canvas_boxes, axis=0)
+    labels_lst = np.concatenate(canvas_labels, axis=0)
     return boxes_lst, labels_lst
 
 

@@ -20,11 +20,13 @@ def random_expand(img, boxes, labels):
     img = cv2.copyMakeBorder(img, gaps[0], gaps[1], gaps[2], gaps[3], cv2.BORDER_CONSTANT,
                              value=(np.mean(img), np.mean(img), np.mean(img)))
     img = cv2.resize(img, dsize=(w,h))
-    new_xc = (boxes[...,0]*w + gaps[2]) / (w + gaps[2] + gaps[3])
-    new_yc = (boxes[...,1]*h + gaps[0]) / (h + gaps[0] + gaps[1])
-    new_w = boxes[...,2]*w / (w + gaps[2] + gaps[3])
-    new_h = boxes[...,3]*h / (h + gaps[0] + gaps[1])
-    return img, np.stack([new_xc, new_yc, new_w, new_h], axis=-1), labels
+    if boxes.shape[0]>0:
+        new_xc = (boxes[...,0]*w + gaps[2]) / (w + gaps[2] + gaps[3])
+        new_yc = (boxes[...,1]*h + gaps[0]) / (h + gaps[0] + gaps[1])
+        new_w = boxes[...,2]*w / (w + gaps[2] + gaps[3])
+        new_h = boxes[...,3]*h / (h + gaps[0] + gaps[1])
+        boxes = np.stack([new_xc, new_yc, new_w, new_h], axis=-1)
+    return img, boxes, labels
 
 
 def random_crop(img, boxes, labels, iou_thresh=0.5):
@@ -32,11 +34,7 @@ def random_crop(img, boxes, labels, iou_thresh=0.5):
     boxes = boxes.copy()
     labels = labels.copy()
     h, w, c = img.shape
-    boxes_x1y1x2y2 = np.zeros_like(boxes)
-    boxes_x1y1x2y2[...,0] = boxes[...,0]-boxes[...,2]/2
-    boxes_x1y1x2y2[...,1] = boxes[...,1]-boxes[...,3]/2
-    boxes_x1y1x2y2[...,2] = boxes[...,0]+boxes[...,2]/2
-    boxes_x1y1x2y2[...,3] = boxes[...,1]+boxes[...,3]/2
+
     for _ in range(50):
         new_w = random.randint(int(w*0.3), w)
         new_h = random.randint(int(h*0.3), h)
@@ -44,27 +42,35 @@ def random_crop(img, boxes, labels, iou_thresh=0.5):
             continue
         new_x1 = random.randint(0, w-new_w)
         new_y1 = random.randint(0, h-new_h)
-        boxes_xcyc = boxes[...,:2] * [[w, h]]
-        center_in = (boxes_xcyc>[[new_x1,new_y1]]) & (boxes_xcyc<[[new_x1+new_w,new_y1+new_h]])
-        center_in = center_in[:,0] & center_in[:,1]
-        if not center_in.any():
-            continue
+        if boxes.shape[0]>0:
+            boxes_xcyc = boxes[...,:2] * [[w, h]]
+            center_in = (boxes_xcyc>[[new_x1,new_y1]]) & (boxes_xcyc<[[new_x1+new_w,new_y1+new_h]])
+            center_in = center_in[:,0] & center_in[:,1]
+            if not center_in.any():
+                continue
         new_box = np.array([[new_x1/w, new_y1/h, (new_x1+new_w)/w, (new_y1+new_h)/h]])
-        iou = cal_iou(boxes_x1y1x2y2, new_box)
-        if np.max(iou) < iou_thresh:
-            continue
+        if boxes.shape[0]>0:
+            boxes_x1y1x2y2 = np.zeros_like(boxes)
+            boxes_x1y1x2y2[...,0] = boxes[...,0]-boxes[...,2]/2
+            boxes_x1y1x2y2[...,1] = boxes[...,1]-boxes[...,3]/2
+            boxes_x1y1x2y2[...,2] = boxes[...,0]+boxes[...,2]/2
+            boxes_x1y1x2y2[...,3] = boxes[...,1]+boxes[...,3]/2
+            iou = cal_iou(boxes_x1y1x2y2, new_box)
+            if np.max(iou) < iou_thresh:
+                continue
         img = img[new_y1:new_y1+new_h, new_x1:new_x1+new_w]
-        boxes_x1y1x2y2 = boxes_x1y1x2y2[center_in]
-        labels = labels[center_in]
-        boxes_x1 = np.maximum(boxes_x1y1x2y2[:,0]*w, new_x1) - new_x1
-        boxes_y1 = np.maximum(boxes_x1y1x2y2[:,1]*h, new_y1) - new_y1
-        boxes_x2 = np.minimum(boxes_x1y1x2y2[:,2]*w, new_x1+new_w) - new_x1
-        boxes_y2 = np.minimum(boxes_x1y1x2y2[:,3]*h, new_y1+new_h) - new_y1
-        boxes_xc = (boxes_x1+boxes_x2) / 2 / new_w
-        boxes_yc = (boxes_y1+boxes_y2) / 2 / new_h
-        boxes_w = (boxes_x2 - boxes_x1) / new_w
-        boxes_h = (boxes_y2 - boxes_y1) / new_h
-        boxes = np.stack([boxes_xc, boxes_yc, boxes_w, boxes_h], axis=-1)
+        if boxes.shape[0]>0:
+            boxes_x1y1x2y2 = boxes_x1y1x2y2[center_in]
+            labels = labels[center_in]
+            boxes_x1 = np.maximum(boxes_x1y1x2y2[:,0]*w, new_x1) - new_x1
+            boxes_y1 = np.maximum(boxes_x1y1x2y2[:,1]*h, new_y1) - new_y1
+            boxes_x2 = np.minimum(boxes_x1y1x2y2[:,2]*w, new_x1+new_w) - new_x1
+            boxes_y2 = np.minimum(boxes_x1y1x2y2[:,3]*h, new_y1+new_h) - new_y1
+            boxes_xc = (boxes_x1+boxes_x2) / 2 / new_w
+            boxes_yc = (boxes_y1+boxes_y2) / 2 / new_h
+            boxes_w = (boxes_x2 - boxes_x1) / new_w
+            boxes_h = (boxes_y2 - boxes_y1) / new_h
+            boxes = np.stack([boxes_xc, boxes_yc, boxes_w, boxes_h], axis=-1)
 
         return img, boxes, labels
 
@@ -98,6 +104,7 @@ def random_rotate(img, boxes, labels):
     n_points = tl.shape[0]
     points = list(tl) + list(tr) + list(bl) + list(br)
     img, points = rotate_img(rotate_angle, img, points)
+    img = cv2.resize(img, (w,h))
     new_tl = np.array(points[:n_points])
     new_tr = np.array(points[n_points:n_points*2])
     new_bl = np.array(points[n_points*2:n_points*3])
@@ -169,9 +176,12 @@ if __name__ == '__main__':
     boxes = np.array(boxes)
     labels = np.array(labels)
 
+    # boxes = np.zeros((0))
+    # labels = []
+
     for i in range(10):
-        img2, boxes2, _ = random_expand(img, boxes, labels)
-        # img2, boxes2, _ = random_crop(img, boxes, labels)
+        # img2, boxes2, _ = random_expand(img, boxes, labels)
+        img2, boxes2, _ = random_crop(img, boxes, labels)
         # img2, boxes2, _ = random_flip(img, boxes, labels)
         # img2, boxes2, _ = random_rotate(img, boxes, labels)
         h, w, c = img2.shape
@@ -182,4 +192,4 @@ if __name__ == '__main__':
 
         cv2.imshow("tmp2", img2)
         cv2.waitKey(0)
-        # cv2.imwrite("random_rotate.png", img2)
+        cv2.imwrite("random_rotate.png", img2)
