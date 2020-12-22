@@ -182,8 +182,8 @@ if __name__ == '__main__':
     boxes = np.array(boxes)
     labels = np.array(labels)
 
-    boxes = np.zeros((0))
-    labels = []
+    # boxes = np.zeros((0))
+    # labels = []
 
     for i in range(10):
         # img2, boxes2, _ = random_expand(img, boxes, labels)
