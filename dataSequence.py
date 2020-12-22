@@ -62,8 +62,8 @@ class dataSequence(Sequence):
                 img = cv2.imread(os.path.join(self.img_dir, file_name+'.png'), 1)
                 if os.path.exists(os.path.join(self.label_dir, file_name+'.json')):
                     boxes = get_box(os.path.join(self.label_dir, file_name+'.json'))
-                    boxes = boxes[:,:-1]
                     labels = boxes[:,-1:]
+                    boxes = boxes[:,:-1]
                 else:
                     boxes = np.zeros((0))
                     labels = np.zeros((0))
