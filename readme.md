@@ -12,7 +12,7 @@
 
 3. compose
     分类：
-        mixup: 全图叠加，类别加权
+        mixup: 全图叠加，类别加权, default alpha=1.0, 论文实验alpha=[0.1,0.2,0.4,4,8], alpha的值越大生成的lam偏向0.5的可能性更高
         cutout: 局部区域填0，类别不变
         cutMix: 局部区域填充其他图像，类别加权
     检测：

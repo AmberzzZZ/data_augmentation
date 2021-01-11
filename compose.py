@@ -8,6 +8,17 @@ import json
 # [0,255] img, [h,w,c]
 # [0,1] normed xcycwh, [N,4]
 
+def mixup(img1, labels1, img2, labels2, alpha=.2):
+    img1 = img1.copy()
+    img2 = img2.copy()
+    # beta distribution
+    lam = np.random.beta(alpha, alpha)
+    img = lam*np.float32(img1) + (1-lam)*np.float32(img2)
+    labels = lam*np.float32(labels1) + (1-lam)*np.float32(labels2)
+
+    return np.uint8(img), labels
+
+
 def cutMix(img1, labels1, img2, labels2):
     img1 = img1.copy()
     img2 = img2.copy()
@@ -105,24 +116,32 @@ if __name__ == '__main__':
     img1 = cv2.imread("data/tux_hacking.png", 1)
     img2 = cv2.imread("data/bialetti.png", 1)
 
-    # test cutmix
+    # test mixup
     for i in range(10):
-        img, label = cutMix(img1, [0,1], img2, [1,0])
+        img, label = mixup(img1, [0,1], img2, [1,0])
+        print(np.max(img), np.min(img))
         print(label)
         cv2.imshow("tmp", img)
         cv2.waitKey(0)
-        cv2.imwrite('cutmix.png', img)
+        cv2.imwrite('mixup.png', img)
 
+    # # test cutmix
+    # for i in range(10):
+    #     img, label = cutMix(img1, [0,1], img2, [1,0])
+    #     print(label)
+    #     cv2.imshow("tmp", img)
+    #     cv2.waitKey(0)
+    #     cv2.imwrite('cutmix.png', img)
 
-    with open('data/tux_hacking.json', 'r') as f:
-        label = json.loads(f.read())
-    boxes = []
-    labels = []
-    for bbox in label:
-        boxes.append([bbox['xc'], bbox['yc'], bbox['w'], bbox['h']])
-        labels.append(bbox['label'])
-    boxes = np.array(boxes)
-    labels = np.array(labels)
+    # with open('data/tux_hacking.json', 'r') as f:
+    #     label = json.loads(f.read())
+    # boxes = []
+    # labels = []
+    # for bbox in label:
+    #     boxes.append([bbox['xc'], bbox['yc'], bbox['w'], bbox['h']])
+    #     labels.append(bbox['label'])
+    # boxes = np.array(boxes)
+    # labels = np.array(labels)
 
     # # test mosaic
     # for i in range(10):
