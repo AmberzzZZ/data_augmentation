@@ -44,12 +44,12 @@
 
     \*\_level_to_arg: 将0-10的magnitude映射到每个operation的实际参数
 
-    distort_image_with_autoaugment: 把best policies用在image上，返回augmented versions
+    distort_image_with_autoaugment: 把best policies用在image上，返回augmented versions，返回值是tf tensor
 
     distort_image_with_randaugment: 
         number_layers: N，其实是number of operations per sub-policy，choose in [1,3]
         magnitude: M，choose in [5, 30]
-        返回一张随机增强的图
+        返回一张随机增强的图，返回值是tf tensor
 
 
 
